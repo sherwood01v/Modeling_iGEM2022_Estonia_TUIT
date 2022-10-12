@@ -1,0 +1,75 @@
+/* agents */
+%agent: E1(x)
+%agent: E2(x)
+%agent: E3(x)
+%agent: E4(x)
+%agent: E5(x)
+%agent: S(x{dopaquinone, cyclodopa, dopachrome, dhi, indolequinone, eumelanin})
+
+/* concentrations */
+%var: 'conc_E1'                1.0e-6
+%var: 'conc_E2'                1.0e-6
+%var: 'conc_E3'                1.0e-6
+%var: 'conc_E4'                1.0e-6
+%var: 'conc_E5'                1.0e-6
+%var: 'conc_S'                1.0e-5
+%var: 'fraction_E1'            1.0
+%var: 'fraction_E2'            1.0
+%var: 'fraction_E3'            1.0
+%var: 'fraction_E4'            1.0
+%var: 'fraction_E5'            1.0
+
+/* Conversions from concentration-based to stochastic parameters */
+%var: 'avogadro' 6.022E23
+%var: 'cell_volume' 2.25E-12
+%var: 'cell_volume_fraction' 0.001
+%var: 'stochastic' 'avogadro' * 'cell_volume' * 'cell_volume_fraction'
+
+/* rates */
+%var: 'kon_E1_S'    1.0e5 / stochastic   // M-1 s-1  on-rate of E1 binding to substrate
+%var: 'koff_E1_S'   1.0e-3               // s-1      off-rate of E1 unbinding from substrate
+%var: 'kon_E2_Se1'    1.0e5 / stochastic   // M-1 s-1  on-rate of E2 binding to substrate
+%var: 'koff_E2_Se1'   1.0e-3               // s-1      off-rate of E2 unbinding from substrate
+%var: 'kon_E3_Se2'    1.0e5 / stochastic   // M-1 s-1  on-rate of E3 binding to substrate
+%var: 'koff_E3_Se2'   1.0e-3               // s-1      off-rate of E3 unbinding from substrate
+%var: 'kon_E4_Se3'    1.0e5 / stochastic   // M-1 s-1  on-rate of E4 binding to substrate
+%var: 'koff_E4_Se3'   1.0e-3               // s-1      off-rate of E4 unbinding from substrate
+%var: 'kon_E5_Se4'    1.0e5 / stochastic   // M-1 s-1  on-rate of E5 binding to substrate
+%var: 'koff_E5_Se4'   1.0e-3               // s-1      off-rate of E5 unbinding from substrate
+%var: 'r1'      3.8                  // s-1
+%var: 'r2'    5.3 * 10^6                  // s-1
+%var: 'r3'    0.5                  // s-1 
+%var: 'r4'    1.4 * 10^6                 // s-1 
+%var: 'r5'    9 * 10^7                  // s-1
+%var: 'koff_E1_Se1'  1.0e-2               // s-1
+%var: 'koff_E2_Se2'  1.0e-2               // s-1
+%var: 'koff_E3_Se3'  1.0e-2               // s-1
+%var: 'koff_E4_Se4'  1.0e-2               // s-1
+%var: 'koff_E5_Se5'  1.0e-2               // s-1
+
+/* rules */
+'E1 S assoc' E1(x[.]), S(x[.]{dopaquinone}) <-> E1(x[1]), S(x[1]{dopaquinone}) @ kon_E1_S, koff_E1_S
+'E2 S assoc' E2(x[.]), S(x[.]{cyclodopa}) <-> E2(x[1]), S(x[1]{cyclodopa}) @ kon_E2_Se1, koff_E2_Se1
+'E3 S assoc' E3(x[.]), S(x[.]{dopachrome}) <-> E3(x[1]), S(x[1]{dopachrome}) @ kon_E3_Se2, koff_E3_Se2
+'E4 S assoc' E4(x[.]), S(x[.]{dhi}) <-> E4(x[1]), S(x[1]{dhi}) @ kon_E4_Se3, koff_E4_Se3
+'E5 S assoc' E5(x[.]), S(x[.]{indolequinone}) <-> E5(x[1]), S(x[1]{indolequinone}) @ kon_E5_Se4, koff_E5_Se4
+'E1 S mod' E1(x[1]), S(x{dopaquinone}[1]) -> E1(x[1]), S(x{cyclodopa}[1]) @ r1
+'E2 S mod' E2(x[1]), S(x{cyclodopa}[1]) -> E2(x[1]), S(x{dopachrome}[1]) @ r2
+'E3 S mod' E3(x[1]), S(x{dopachrome}[1]) -> E3(x[1]), S(x{dhi}[1]) @ r3
+'E4 S mod' E4(x[1]), S(x{dhi}[1]) -> E4(x[1]), S(x{indolequinone}[1]) @ r4
+'E5 S mod' E5(x[1]), S(x{indolequinone}[1]) -> E5(x[1]), S(x{eumelanin}[1]) @ r5
+'E1 S dissoc' E1(x[1]), S(x{cyclodopa}[1]) -> E1(x[.]), S(x{cyclodopa}[.]) @ koff_E1_Se1
+'E2 S dissoc' E2(x[1]), S(x{dopachrome}[1]) -> E2(x[.]), S(x{dopachrome}[.]) @ koff_E2_Se2
+'E3 S dissoc' E3(x[1]), S(x{dhi}[1]) -> E3(x[.]), S(x{dhi}[.]) @ koff_E3_Se3
+'E4 S dissoc' E4(x[1]), S(x{indolequinone}[1]) -> E4(x[.]), S(x{indolequinone}[.]) @ koff_E4_Se4
+'E5 S dissoc' E5(x[1]), S(x{eumelanin}[1]) -> E5(x[.]), S(x{eumelanin}[.]) @ koff_E5_Se5
+
+/* initial conditions */
+%init: conc_E1 * fraction_E1 * stochastic E1(x[.])
+%init: conc_E2 * fraction_E2 * stochastic E2(x[.])
+%init: conc_E3 * fraction_E3 * stochastic E3(x[.])
+%init: conc_E4 * fraction_E4 * stochastic E4(x[.])
+%init: conc_E5 * fraction_E5 * stochastic E5(x[.])
+%init: conc_S * stochastic S(x{dopaquinone}[.])
+
+%obs: 'Eumelanin'  |S(x{eumelanin})|
